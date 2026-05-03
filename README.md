@@ -110,8 +110,7 @@ CyberShield/
 - Modern browser (Chrome / Edge / Firefox)
 
 ---
-Mohammad Abdul Razzaq Ali 
-- Final Year B.Tech/B.E. Project  
+Mohammad Abdul Razzaq Ali-Final Year B.Tech/B.E. Project  
 Department of Computer Science Engineering / AI/ML
 Osmania University,4th year
 
