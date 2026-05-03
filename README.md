@@ -110,12 +110,10 @@ CyberShield/
 - Modern browser (Chrome / Edge / Firefox)
 
 ---
-
-## 👥 Team
-
-**[Your Name]** — Final Year B.Tech/B.E. Project  
-Department of Computer Science / IT  
-[Your College Name], [Year]
+Mohammad Abdul Razzaq Ali 
+Final Year B.Tech/B.E. Project  
+Department of Computer Science Engineering / AI/ML
+Osmania University,4th year
 
 ---
 
