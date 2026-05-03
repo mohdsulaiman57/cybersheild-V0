@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CyberShield — AI Cyber Threat Detection System</title>
+  <meta name="description" content="Real-time AI-powered network intrusion and cyber threat detection dashboard using Random Forest, XGBoost and Neural Networks." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ░░ Animated Background ░░ -->
+  <div class="cyber-bg" aria-hidden="true">
+    <div class="grid-overlay"></div>
+    <canvas id="particleCanvas"></canvas>
+    <div class="scanline"></div>
+  </div>
+
+  <!-- ░░ Header ░░ -->
+  <header class="header" role="banner">
+    <div class="header-left">
+      <div class="logo">
+        <div class="logo-shield">🛡</div>
+        <div class="logo-text">
+          <span class="logo-title">CYBERSHIELD</span>
+          <span class="logo-sub">AI Network Threat Detection · v2.0</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-center">
+      <div class="system-status" id="systemStatus">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">CONNECTING…</span>
+      </div>
+      <div class="header-divider"></div>
+      <div class="time-display" id="timeDisplay">--:--:--</div>
+    </div>
+
+    <div class="header-right">
+      <button class="btn-scan" id="btnLiveScan" aria-label="Toggle live scan">
+        <span id="scanIcon">⚡</span>
+        <span id="scanLabel">LIVE SCAN</span>
+      </button>
+      <button class="btn-reset" id="btnReset" aria-label="Reset dashboard">↺ RESET</button>
+    </div>
+  </header>
+
+  <!-- ░░ Alert Banner ░░ -->
+  <div class="alert-banner" id="alertBanner" role="alert" aria-live="assertive">
+    <span class="alert-icon" id="alertIcon">⚡</span>
+    <div class="alert-body">
+      <div class="alert-title" id="alertTitle">CRITICAL THREAT</div>
+      <div class="alert-desc"  id="alertDesc"></div>
+    </div>
+    <button class="alert-close" id="alertClose" aria-label="Dismiss alert">✕</button>
+  </div>
+
+  <!-- ░░ Main ░░ -->
+  <main class="main" role="main">
+
+    <!-- ── Stat Cards ── -->
+    <section class="stats-row" aria-label="Summary statistics">
+
+      <div class="stat-card" id="sc-total">
+        <div class="sc-icon">📊</div>
+        <div class="sc-body">
+          <div class="sc-val" id="statTotal">0</div>
+          <div class="sc-label">Packets Analysed</div>
+        </div>
+        <div class="sc-glow"></div>
+      </div>
+
+      <div class="stat-card danger" id="sc-threats">
+        <div class="sc-icon">🚨</div>
+        <div class="sc-body">
+          <div class="sc-val" id="statThreats">0</div>
+          <div class="sc-label">Threats Detected</div>
+        </div>
+        <div class="sc-glow"></div>
+      </div>
+
+      <div class="stat-card critical" id="sc-critical">
+        <div class="sc-icon">💀</div>
+        <div class="sc-body">
+          <div class="sc-val" id="statCritical">0</div>
+          <div class="sc-label">Critical</div>
+        </div>
+        <div class="sc-glow"></div>
+      </div>
+
+      <div class="stat-card high" id="sc-high">
+        <div class="sc-icon">🔴</div>
+        <div class="sc-body">
+          <div class="sc-val" id="statHigh">0</div>
+          <div class="sc-label">High</div>
+        </div>
+        <div class="sc-glow"></div>
+      </div>
+
+      <div class="stat-card medium" id="sc-medium">
+        <div class="sc-icon">🟠</div>
+        <div class="sc-body">
+          <div class="sc-val" id="statMedium">0</div>
+          <div class="sc-label">Medium</div>
+        </div>
+        <div class="sc-glow"></div>
+      </div>
+
+      <div class="stat-card low" id="sc-low">
+        <div class="sc-icon">🟡</div>
+        <div class="sc-body">
+          <div class="sc-val" id="statLow">0</div>
+          <div class="sc-label">Low</div>
+        </div>
+        <div class="sc-glow"></div>
+      </div>
+
+    </section>
+
+    <!-- ── 3-Column Grid ── -->
+    <div class="dashboard-grid">
+
+      <!-- ══ LEFT COLUMN ══ -->
+      <div class="col col-left">
+
+        <!-- Live Threat Feed -->
+        <div class="panel" id="panel-feed">
+          <div class="panel-hdr">
+            <span class="panel-title"><span class="blink-dot"></span> LIVE THREAT FEED</span>
+            <div class="panel-actions">
+              <button class="pill-btn" id="btnPauseFeed">⏸ PAUSE</button>
+            </div>
+          </div>
+          <div class="threat-feed" id="threatFeed">
+            <div class="feed-placeholder">Waiting for packets…</div>
+          </div>
+        </div>
+
+        <!-- Traffic Timeline -->
+        <div class="panel">
+          <div class="panel-hdr">
+            <span class="panel-title">📈 TRAFFIC TIMELINE</span>
+          </div>
+          <div class="chart-wrap" style="height:200px;">
+            <canvas id="timelineChart"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ══ MIDDLE COLUMN ══ -->
+      <div class="col col-mid">
+
+        <!-- Threat Distribution -->
+        <div class="panel">
+          <div class="panel-hdr">
+            <span class="panel-title">🎯 THREAT DISTRIBUTION</span>
+          </div>
+          <div class="chart-wrap donut-wrap">
+            <canvas id="distChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Model Performance -->
+        <div class="panel">
+          <div class="panel-hdr">
+            <span class="panel-title">🧠 MODEL PERFORMANCE</span>
+          </div>
+          <div class="model-list" id="modelList">
+            <div class="panel-loading">Loading metrics…</div>
+          </div>
+        </div>
+
+        <!-- Attack Legend -->
+        <div class="panel">
+          <div class="panel-hdr">
+            <span class="panel-title">📖 ATTACK REFERENCE</span>
+          </div>
+          <div class="legend-grid" id="legendGrid"></div>
+        </div>
+
+      </div>
+
+      <!-- ══ RIGHT COLUMN ══ -->
+      <div class="col col-right">
+
+        <!-- Packet Analyzer -->
+        <div class="panel">
+          <div class="panel-hdr">
+            <span class="panel-title">🔬 PACKET ANALYSER</span>
+          </div>
+          <div class="analyzer">
+
+            <!-- Quick Presets -->
+            <div class="preset-row">
+              <span class="preset-label">Quick Preset:</span>
+              <div class="presets">
+                <button class="preset normal"      onclick="applyPreset('normal')"     id="preset-normal">NORMAL</button>
+                <button class="preset ddos"        onclick="applyPreset('ddos')"       id="preset-ddos">DDoS</button>
+                <button class="preset portscan"    onclick="applyPreset('portscan')"   id="preset-portscan">PORT SCAN</button>
+                <button class="preset bruteforce"  onclick="applyPreset('bruteforce')" id="preset-brute">BRUTE FORCE</button>
+                <button class="preset sqlinjection" onclick="applyPreset('sqlinjection')" id="preset-sql">SQL INJECT</button>
+                <button class="preset botnet"      onclick="applyPreset('botnet')"     id="preset-bot">BOTNET</button>
+              </div>
+            </div>
+
+            <!-- Feature Inputs -->
+            <div class="form-grid">
+              <div class="fg"><label>Duration (s)</label>
+                <input type="number" id="f_duration"        value="0.5"  step="0.1" min="0" /></div>
+              <div class="fg"><label>Protocol</label>
+                <select id="f_protocol">
+                  <option value="0">TCP</option>
+                  <option value="1">UDP</option>
+                  <option value="2">ICMP</option>
+                </select></div>
+              <div class="fg"><label>Src Bytes</label>
+                <input type="number" id="f_src_bytes"       value="500"  min="0" /></div>
+              <div class="fg"><label>Dst Bytes</label>
+                <input type="number" id="f_dst_bytes"       value="200"  min="0" /></div>
+              <div class="fg"><label>Conn Count</label>
+                <input type="number" id="f_count"           value="10"   min="0" /></div>
+              <div class="fg"><label>SYN Err Rate</label>
+                <input type="number" id="f_serror_rate"     value="0.01" step="0.01" min="0" max="1" /></div>
+              <div class="fg"><label>Failed Logins</label>
+                <input type="number" id="f_failed_logins"   value="0"    min="0" /></div>
+              <div class="fg"><label>Hot Indicators</label>
+                <input type="number" id="f_hot"             value="0"    min="0" /></div>
+            </div>
+
+            <!-- Model Select -->
+            <div class="model-select-row">
+              <label>Model:</label>
+              <select id="f_model">
+                <option value="ensemble">🔀 Ensemble (all 3)</option>
+                <option value="random_forest">🌲 Random Forest</option>
+                <option value="xgboost">⚡ XGBoost</option>
+                <option value="mlp">🧠 Neural Network</option>
+              </select>
+            </div>
+
+            <button class="btn-analyze" id="btnAnalyze">🔍 ANALYSE PACKET</button>
+
+            <!-- Result Box -->
+            <div class="result-box" id="resultBox" style="display:none">
+              <div class="result-top" id="resultTop">
+                <div class="result-icon-lg" id="resultIconLg"></div>
+                <div class="result-meta">
+                  <div class="result-type" id="resultType"></div>
+                  <div class="result-sev"  id="resultSev"></div>
+                </div>
+                <div class="result-conf" id="resultConf"></div>
+              </div>
+              <div class="result-desc" id="resultDesc"></div>
+              <div class="result-rec"  id="resultRec"></div>
+              <div class="prob-bars"   id="probBars"></div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Threat Log Table -->
+        <div class="panel">
+          <div class="panel-hdr">
+            <span class="panel-title">📋 THREAT LOG</span>
+            <span class="entry-badge" id="entryBadge">0</span>
+          </div>
+          <div class="log-wrap" id="logWrap">
+            <div class="panel-loading">No data yet…</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
